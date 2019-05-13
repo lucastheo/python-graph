@@ -1,3 +1,5 @@
+from .edge import edge
+
 class graph:
     def __init__( self ):
         self._vertices = dict()
@@ -12,7 +14,7 @@ class graph:
 
             newInode = len( self._listVertices )
             newVertice = vertice( name , args, newInode )
-            ver.set_inode( newNode )
+            newVertice.set_inode( newNode )
 
             # adicionando
             self._vertices[ name ] = newInode 
@@ -22,7 +24,7 @@ class graph:
             print("Tem que tratar")
             return None
 
-    def add_vertice( self , ver:vertice ):
+    def add_vertice( self , ver ):
         if ver.name not in self._vertices.keys():
             # gerando o numero do no
             newNode = len( self._listVertices )
@@ -37,27 +39,28 @@ class graph:
             return None
     
     def add_name_egde(self, name: str ,name1: str , args = None):
-        inode = self._listVertices[ self._vertices[ name ] ]
-        inode1 = self._listVertices[ self._vertices[ name ] ]
+        inode = self._vertices[ name ]
+        inode1 = self._vertices[ name1 ]
 
-        return self.add_inode_egde( inode , edge, args )
+        return self.add_inode_egde( inode , inode1, args )
 
     def add_inode_egde(self, inode: int , inode1: int, args = None ):
         ver = self._listVertices[ inode ]
         ver1 = self._listVertices[ inode1 ]
         return self.add_vertice_egde( ver , ver1, args )        
 
-    def add_vertice_egde(self, ver: vertice ,ver1: vertice, args = None ):
+    def add_vertice_egde(self, ver ,ver1, args = None ):
         newInode = len( self._listEdges ) 
-        newEdge = edge( args , newInode )
         
         in_inode = ver.inode
         out_inode = ver1.inode 
 
+        newEdge = edge( in_inode, out_inode, args )
+
         if in_inode not in self._edges:
             self._edges[ in_inode ] = dict()
         
-        if out_inoe not in self._edges[ in_inode ]:
+        if out_inode not in self._edges[ in_inode ]:
             ver.edges.add( newEdge )
 
             self._edges[ in_inode ][ out_inode ] = newInode
@@ -77,7 +80,7 @@ class graph:
         edge = self._listEdges[ inode ]
         return edge
     
-    def get_vertice_edge( self, ver: vertice , ver1:vertice ):
+    def get_vertice_edge( self, ver , ver1 ):
         edge = self._edges[ ver.inode ][ ver1.inode ]
         return edge
     
@@ -89,12 +92,24 @@ class graph:
         inode = self._vertices[ name ]
         inode1 = self._vertices[ name1 ]
         return self.get_inode_edge( inode , inode1 )
-        
+
+    def in_name_graph_vertice( self , name:str ):
+        if name in self._vertices.keys():
+            return True
+        else:
+            return False
+    def in_inode_graph_vertice( self , inode:int ):
+        if inode < len( self._listVertices ):
+            return True
+        else:
+            return False
+
     def __str__(self):
-        print("vertices size:", len( self._listEdges)
-        for inode in self._vertices.keys()
-            s = self._listVertices[ inode ]
-            print( f"[{s}]" , end = "" )
-        print("")
+        s =  f"vertices size: {len( self._listVertices)}\n"
+        s += f"egds size: {len( self._listEdges)}\n"
+        for inode in range(len( self._listVertices)):
+            s += f"inode: {inode}->"
+            s += f"{self._listVertices[ inode ]}\n" 
+        return s
 
     
