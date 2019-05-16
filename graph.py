@@ -68,11 +68,12 @@ class graph:
 
         return newEdge
 
-    def get_name_vertice( self , name ):
-        inode = self._listVertices[ self._vertices[ name ] ]
+    def get_name_vertice( self , name:str ):
+        inode = self._vertices[ name ]
+        print(inode)
         return self.get_inode_vertice( inode )
 
-    def get_inode_vertice( self, inode ):
+    def get_inode_vertice( self, inode:int ):
         ver = self._listVertices[ inode ]    
         return ver
 
@@ -113,3 +114,14 @@ class graph:
         return s
 
     
+    def saida_graph_viz(self):
+        s = "digraph{\n"
+        for edge in self._listEdges:
+            inVer = self._listVertices[ edge.inode_in ]
+            outVer = self._listVertices[ edge.inode_out ]
+
+            s += f'"{inVer.name}" -> "{outVer.name}" [label="{edge.args}"];\n'
+        s += "}"
+        return s
+
+
