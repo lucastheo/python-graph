@@ -1,0 +1,3 @@
+[submodule "utils/GDF_Formatter"]
+	path = utils/GDF_Formatter
+	url = https://github.com/GabrielTrettel/GDF_Formatter.git

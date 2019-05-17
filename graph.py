@@ -1,4 +1,6 @@
 from .edge import edge
+from .utils.GDF_Formatter import gdf_formatter
+from graphviz import Digraph as graphviz_Digraph
 
 class graph:
     def __init__( self ):
@@ -8,6 +10,11 @@ class graph:
         self._edges = dict()
         self._listEdges = list()
     
+    def size_vertices(self):
+        return len( self._listVertices )
+
+    def size_edges(self):
+        return len( self._listEdges )
     def add_vertice( self , name, args = None ):
         if name not in self._vertices.keys():
             # gerando o numero do no
@@ -70,7 +77,6 @@ class graph:
 
     def get_name_vertice( self , name:str ):
         inode = self._vertices[ name ]
-        print(inode)
         return self.get_inode_vertice( inode )
 
     def get_inode_vertice( self, inode:int ):
@@ -114,7 +120,7 @@ class graph:
         return s
 
     
-    def saida_graph_viz(self):
+    def saida_graph_viz_text( self, caminho = None):
         s = "digraph{\n"
         for edge in self._listEdges:
             inVer = self._listVertices[ edge.inode_in ]
@@ -122,6 +128,58 @@ class graph:
 
             s += f'"{inVer.name}" -> "{outVer.name}" [label="{edge.args}"];\n'
         s += "}"
-        return s
+        if caminho == None:
+            return s
+        
+        arq = open( caminho , "w" )
+        arq.write( s )
+        arq.close()
+    def funcAllTrue( self , args ):
+        return True
+    def saida_graph_viz( self, filename, name = 'graph', engine = 'dot', funcLabel = None,funcNode = None, maximoNode = 200 ):
 
+        g = graphviz_Digraph(name, filename = filename, engine = engine, format="png" )
+        cont = 0
+        verticeSelect = set()
+
+        if funcNode == None:
+            funcNode = self.funcAllTrue
+        if funcLabel == None:
+            funcLabel = self.funcAllTrue
+
+        for vertice in self._listVertices:
+            flag = False
+            for edge in vertice.edges.edges:
+                if funcNode( edge ) == True:
+                    flag = True
+                    break
+
+            if flag == True:
+                g.node(vertice.name)
+                verticeSelect.add( vertice.name)
+                if cont == maximoNode:
+                    break
+                else:
+                    cont += 1
+
+        for vertice in self._listVertices:
+            for edge in vertice.edges.edges:
+                if funcNode( edge ) == True:
+                    if vertice.name in verticeSelect or vertice1.name in verticeSelect:
+                        vertice1 = self.get_inode_vertice( edge.inode_out )
+                        g.edge( vertice.name , vertice1.name, funcLabel( edge ) )
+        g.render(filename=filename )
+        
+
+    
+    def saida_graph_gdf( self, caminho ):
+        gdf = gdf_formatter.Graph(allow_equal_edges=True)
+        for vertice in self._listVertices:
+            gdf.addNode( name = vertice.name )
+        for vertice in self._listVertices:
+            for edge in vertice.edges.edges:
+                vertice1 = self.get_inode_vertice( edge.inode_out )
+                gdf.addLink(node1=vertice.name, node2=vertice1.name , weight=edge.args)
+
+        gdf.dump(output_file=caminho)
 
