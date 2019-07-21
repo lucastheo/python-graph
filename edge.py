@@ -5,7 +5,10 @@ class edge:
         self.inode_out = inode_out 
 
     def __str__( self ):
-        s = f"[{self.inode_out},{str(self.args)[:10]}]"
+        if self.args == None:
+            s = f"[{self.inode_in}->{self.inode_out}, args: None]"
+        else:
+            s = f"[{self.inode_in}->{self.inode_out},{str(self.args)[:10]}]"
         return s
 
 class edges:

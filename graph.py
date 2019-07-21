@@ -1,4 +1,5 @@
 from .edge import edge
+from .vertice import vertice
 from .utils.GDF_Formatter import gdf_formatter
 from graphviz import Digraph as graphviz_Digraph
 
@@ -21,17 +22,17 @@ class graph:
 
             newInode = len( self._listVertices )
             newVertice = vertice( name , args, newInode )
-            newVertice.set_inode( newNode )
+            #newVertice.set_inode( newVertice )
 
             # adicionando
             self._vertices[ name ] = newInode 
             self._listVertices.append( newVertice )
             return newVertice
         else:
-            print("Tem que tratar")
+            print("Tem que tratar: add_vertice" , name , args )
             return None
 
-    def add_vertice( self , ver ):
+    def add_vertice_by_vertice( self , ver ):
         if ver.name not in self._vertices.keys():
             # gerando o numero do no
             newNode = len( self._listVertices )
@@ -42,13 +43,15 @@ class graph:
             self._listVertices.append( ver )
             return ver
         else:
-            print("Tem que tratar")
+            print("Tem que tratar: add_vertice_by_vertice")
             return None
     
     def add_name_egde(self, name: str ,name1: str , args = None):
+        if name == None or name1 == None:
+            return None
+        
         inode = self._vertices[ name ]
         inode1 = self._vertices[ name1 ]
-
         return self.add_inode_egde( inode , inode1, args )
 
     def add_inode_egde(self, inode: int , inode1: int, args = None ):
@@ -61,7 +64,7 @@ class graph:
         
         in_inode = ver.inode
         out_inode = ver1.inode 
-
+    
         newEdge = edge( in_inode, out_inode, args )
 
         if in_inode not in self._edges:
@@ -69,7 +72,6 @@ class graph:
         
         if out_inode not in self._edges[ in_inode ]:
             ver.edges.add( newEdge )
-
             self._edges[ in_inode ][ out_inode ] = newInode
             self._listEdges.append( newEdge )
 
@@ -91,14 +93,14 @@ class graph:
         edge = self._edges[ ver.inode ][ ver1.inode ]
         return edge
     
-    def get_inode_edge( self, inode: int , inode1:int ):
+    def get_inode_ver_edge( self, inode: int , inode1:int ):
         edge = self._edges[ inode ][ inode1 ]
         return edge
 
     def get_name_edge( self , name:str, name1:str ):
         inode = self._vertices[ name ]
         inode1 = self._vertices[ name1 ]
-        return self.get_inode_edge( inode , inode1 )
+        return self.get_inode_ver_edge( inode , inode1 )
 
     def in_name_graph_vertice( self , name:str ):
         if name in self._vertices.keys():
@@ -136,9 +138,10 @@ class graph:
         arq.close()
     def funcAllTrue( self , args ):
         return True
-    def saida_graph_viz( self, filename, name = 'graph', engine = 'dot', funcLabel = None,funcNode = None, maximoNode = 200 ):
+    def saida_graph_viz( self, filename, name = 'graph', engine = 'dot',  funcLabel = None,funcNode = None, maximoNode = 200 ):
 
-        g = graphviz_Digraph(name, filename = filename, engine = engine, format="png" )
+        g = graphviz_Digraph(name, filename = filename, engine = engine, format="svg" )
+        
         cont = 0
         verticeSelect = set()
 
@@ -165,21 +168,40 @@ class graph:
         for vertice in self._listVertices:
             for edge in vertice.edges.edges:
                 if funcNode( edge ) == True:
-                    if vertice.name in verticeSelect or vertice1.name in verticeSelect:
-                        vertice1 = self.get_inode_vertice( edge.inode_out )
-                        g.edge( vertice.name , vertice1.name, funcLabel( edge ) )
+                    vertice1 =  self._listVertices[ edge.inode_out ]
+                    #if vertice.name in verticeSelect or vertice1.name in verticeSelect :
+                    g.edge( vertice.name , vertice1.name )
+
         g.render(filename=filename )
         
 
     
-    def saida_graph_gdf( self, caminho ):
-        gdf = gdf_formatter.Graph(allow_equal_edges=True)
-        for vertice in self._listVertices:
-            gdf.addNode( name = vertice.name )
+    def saida_graph_gdf( self, caminho, argsExiste = False, tipoDados:str = None ):
+
+        s = ""
+        if argsExiste == True:
+            if tipoDados == None:
+                s += "nodedef>name VARCHAR,label VARCHAR,args VARCHAR\n"
+                for vertice in self._listVertices:
+                    s += f"{vertice.inode},{vertice.name},{vertice.args}\n"
+            else:
+                s += f"nodedef>name VARCHAR,label VARCHAR, {tipoDados}\n"
+                for vertice in self._listVertices:
+                    s += f"{vertice.inode},{vertice.name}"
+                    for args in vertice.args:
+                        s += f",{args}"
+                    s += "\n"
+        else:
+            s += "nodedef>name VARCHAR,label VARCHAR\n"
+            for vertice in self._listVertices:
+                s += f"{vertice.inode},{vertice.name}\n"
+
+                        
+        s += "edgedef>node1 VARCHAR, node2 VARCHAR\n"
         for vertice in self._listVertices:
             for edge in vertice.edges.edges:
-                vertice1 = self.get_inode_vertice( edge.inode_out )
-                gdf.addLink(node1=vertice.name, node2=vertice1.name , weight=edge.args)
-
-        gdf.dump(output_file=caminho)
-
+                s += f"{vertice.inode},{edge.inode_out}\n"
+        
+        arq = open(caminho, "w")
+        arq.write( s )
+        arq.close()
